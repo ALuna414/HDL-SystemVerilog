@@ -1,0 +1,404 @@
+// Aaron Luna
+// HDL 4321 Fall 2023
+// Final Project Modules
+// 12/1/23
+//
+// Project Outline: 
+//
+//
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Top Module 
+// 
+// File Purpose: Top module that connects all the modules
+// Collaborator: Professor Welker's Given Code
+// 
+// Main memory MUST be allocated in the mainmemory module as per teh next line.
+//  logic [255:0]MainMemory[12]; // this is the physical memory
+//
+
+
+module top ();
+
+  logic [255:0] InstructDataOut;
+  logic [255:0] MemDataOut;
+  logic [255:0] ExeDataOut;
+  logic [255:0] IntDataOut;
+  logic [255:0] MatrixDataOut;
+  logic nRead,nWrite,nReset,Clk;
+  logic [15:0] address;
+
+  logic Fail;
+
+  InstructionMemory  U1(Clk,InstructDataOut, address, nRead,nReset);
+
+  MainMemory  U2(Clk,MemDataOut,ExeDataOut, address, nRead,nWrite, nReset);
+
+  Execution  U3(Clk,InstructDataOut,MemDataOut,MatrixDataOut,IntDataOut,ExeDataOut, address, nRead,nWrite, nReset);
+
+  MatrixAlu  U4(Clk,MatrixDataOut,ExeDataOut, address, nRead,nWrite, nReset);
+
+  IntegerAlu  U5(Clk,IntDataOut,ExeDataOut, address, nRead,nWrite, nReset);
+
+  TestMatrix  UTest(Clk,nReset);
+
+  //initial begin //. setup to allow waveforms for edaplayground
+  // $dumpfile("dump.vcd");
+   //$dumpvars(1);
+    //Fail = 0; // SETUP TO PASS TO START 
+   //end
+
+    // this block checks to make certain the proper data is in the memory.
+  always @(InstructDataOut) begin 
+      if (InstructDataOut[31:0] == 32'hff000000) begin // we are about to execute the stop
+        
+    // Print out the entire contents of main memory so I can copy and paste.
+    $display ( "memory location 0 = %h", U2.MainMemory[0]);
+    $display ( "memory location 1 = %h", U2.MainMemory[1]);
+    $display ( "memory location 2 = %h", U2.MainMemory[2]);
+    $display ( "memory location 3 = %h", U2.MainMemory[3]);
+    $display ( "memory location 4 = %h", U2.MainMemory[4]);
+    $display ( "memory location 5 = %h", U2.MainMemory[5]);
+    $display ( "memory location 6 = %h", U2.MainMemory[6]);
+    $display ( "memory location 7 = %h", U2.MainMemory[7]);
+    $display ( "memory location 8 = %h", U2.MainMemory[8]);
+    $display ( "memory location 9 = %h", U2.MainMemory[9]);
+    $display ( "memory location 10 = %h", U2.MainMemory[10]);
+    $display ( "memory location 11 = %h", U2.MainMemory[11]);
+    $display ( "memory location 12 = %h", U2.MainMemory[12]);
+    $display ( "memory location 13 = %h", U2.MainMemory[13]);
+
+    $display ( "Imternal Reg location 0 = %h", U3.InternalReg[0]);
+    $display ( "Internal reg location 1 = %h", U3.InternalReg[1]);
+    $display ( "Internal reg location 2 = %h", U3.InternalReg[2]);
+    $display ( "Internal reg location 3 = %h", U3.InternalReg[3]);
+      
+    if (U2.MainMemory[0] == 256'h0008000c00080006000c0010000d0009000a00090005000d000c0003000a0006)
+      $display ( "memory location 0 is Correct");
+    else begin Fail = 1; $display ( "memory location 0 is Wrong"); end
+    if (U2.MainMemory[1] == 256'h000300040007000800070008000e000700100009000c000b000c000500050006)
+      $display ( "memory location 1 is Correct");
+    else begin Fail = 1;$display ( "memory location 1 is Wrong"); end
+    if (U2.MainMemory[2] == 256'h000b0010000f000e00130018001b0010001a00120011001800180008000f000c)
+      $display ( "memory location 2 is Correct");
+    else begin Fail = 1;$display ( "memory location 2 is Wrong"); end
+    if (U2.MainMemory[3] == 256'h000300040007000800070008000e000700100009000c000b000c000500050006)
+      $display ( "memory location 3 is Correct");
+    else begin Fail = 1;$display ( "memory location 3 is Wrong"); end
+    if (U2.MainMemory[4] == 256'h000b0013001a00180010001800120008000f001b0011000f000e00100018000c)
+      $display ( "memory location 4 is Correct");
+    else begin Fail = 1;$display ( "memory location 4 is Wrong"); end
+    if (U2.MainMemory[5] == 256'h036602260307028b025801ca02c0021e02ae01f802fa024a02aa01cc029e0230)
+      $display ( "memory location 5 is Correct");
+    else begin Fail = 1;$display ( "memory location 5 is Wrong"); end
+    if (U2.MainMemory[6] == 256'h02c0016201b001ae018000ca010000f601c400e40117011502100114015c0150)
+      $display ( "memory location 6 is Correct");
+    else begin Fail = 1;$display ( "memory location 6 is Wrong"); end
+    if (U2.MainMemory[7] == 256'h00000000000000000000000000000000000000000000000002fa024a029e0230)
+      $display ( "memory location 7 is Correct");
+    else begin Fail = 1;$display ( "memory location 7 is Wrong"); end
+    if (U2.MainMemory[8] == 256'h0000000000000000000000000000000000000000000000000000000000000000)
+      $display ( "memory location 8 is Correct");
+    else begin Fail = 1;$display ( "memory location 8 is Wrong"); end
+    if (U2.MainMemory[9] == 256'h0000000000000000000000000000000000000000000000000000000000000000)
+      $display ( "memory location 9 is Correct");
+    else begin Fail = 1;$display ( "memory location 9 is Wrong"); end
+    if (U2.MainMemory[10][15:0] == 16'h0024)
+      $display ( "memory location 10 is Correct");
+    else begin Fail = 1;$display ( "memory location 10 is Wrong"); end
+    if (U2.MainMemory[11][15:0] == 16'h0000)
+      $display ( "memory location 11 is Correct");
+    else begin Fail = 1;$display ( "memory location 11 is Wrong"); end
+
+    if (U3.InternalReg[0][15:0] == 16'h0013)
+      $display ( "Interal reg location 0 is Correct");
+    else begin Fail = 1; $display ( "Internal Register 0 is Wrong"); end
+    if (U3.InternalReg[1] == 256'h0039004c0085009800850098010a0085013000ab00e400d100e4005f005f0072)
+      $display ( "Internal Reg location 1 is Correct");
+    else begin Fail = 1; $display ( "Internal Register 1 is Wrong"); end
+    if (U3.InternalReg[2][15:0] == 16'h001e)
+      $display ( "Internal Reg location 2 is Correct");
+    else begin Fail = 1; $display ( "Internal Register 2 is Wrong"); end
+
+        if (Fail) begin
+        $display("********************************************");
+        $display(" Project did not return the proper values");
+        $display("********************************************");
+        end
+        else begin
+        $display("********************************************");
+        $display(" Project PASSED memory check");
+        $display("********************************************");
+        end     
+      end // end of if
+    end // end of always block
+
+endmodule
+
+// End of Top Module
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Instruction Module 
+// 
+// File Purpose: ROM that holds instructions to be executed
+// Collaborator: Professor Welker's Given Code
+// 
+
+// Location parameters
+parameter MainMemEn = 0;
+parameter RegisterEn = 1;
+parameter InstrMemEn = 2;
+parameter AluEn = 3;
+parameter ExecuteEn = 4;
+parameter IntAlu = 5;
+
+// Alu Register setup 
+// Same register sequence for both ALU's 
+parameter AluStatusIn = 0;
+parameter AluStatusOut = 1;
+parameter ALU_Source1 = 2;
+parameter ALU_Source2 = 3;
+parameter  ALU_Result = 4;
+parameter Overflow_err = 5;
+    
+// add the data at location 0 to the data at location 1 and place result in location 2
+parameter Instruct1 = 32'h 03_02_00_01; //Add first matrix to second matrix store in memory
+parameter Instruct2 = 32'h 10_10_0a_0b; //Add 16 bit numbers in location a to b store in temp register
+parameter Instruct3 = 32'h 04_03_02_00; //Subtract 1st matrix from result in Step1 and store somewhere else in mem. 
+parameter Instruct4 = 32'h 05_04_02_00; //Transpose the result from step 1 store in memory
+parameter Instruct5 = 32'h 07_11_03_10; //ScaleImm result in step 3 by result from step 2, store in a matrix register
+parameter Instruct6 = 32'h 00_05_04_03; //Multiply result from step 4 by result in step 3, store in memory. 4x4 * 4x4
+parameter Instruct7 = 32'h 01_06_04_03; //Multiply result from step 6 by result in step 5, store in memory. 4x2 * 2x4
+parameter Instruct8 = 32'h 02_07_04_03; //Multiply result from step 5 by result in step 4, store in memory. 2x4 * 4x2
+parameter Instruct9 = 32'h 12_0a_01_00; //Multiply integer value in memory location 0 to location 1. Store it in memory location 0x0A
+parameter Instruct10 = 32'h 11_12_0a_01;//Subtract integer value in memory location 01 from memory location 0x0A and store it in a register
+parameter Instruct11 = 32'h 13_0b_0a_12;//Divide Memory location 0x0A by register in step 8, store it in location 0x0B
+parameter Instruct12 = 32'h FF_00_00_00; // stop
+// End of parameter declarations
+  
+
+module InstructionMemory(Clk, InstructDataOut, address, nRead, nReset); 
+// NOTE the lack of datain and write. This is because this is a ROM model
+  
+    input logic nRead, nReset, Clk;
+    input logic [15:0] address;
+    
+    output logic [255:0] InstructDataOut;
+      
+    logic [255:0]InstructMemory[12]; // Physical memory
+
+// This memory is designed to be driven into a data multiplexor. 
+    always_ff @(negedge Clk or negedge nReset) begin
+      if (!nReset) begin
+      InstructDataOut = 0;
+    end 
+  
+      else begin
+        if(address[15:12] == InstrMemEn) begin // Talking to Instruction IntstrMemEn
+          if(!nRead) begin
+        InstructDataOut <= InstructMemory[address[11:0]]; // data will reamin on dataout until it is changed.
+          end // end if !nRead
+        end //end if Address||
+      end // end else
+    end // from negedge nRead
+  
+    always @(negedge nReset) begin // set in the default instructions 
+      InstructMemory[0] = Instruct1;    
+    InstructMemory[1] = Instruct2;    
+      InstructMemory[2] = Instruct3;
+    InstructMemory[3] = Instruct4;  
+    InstructMemory[4] = Instruct5;
+    InstructMemory[5] = Instruct6;
+    InstructMemory[6] = Instruct7;
+    InstructMemory[7] = Instruct8;
+    InstructMemory[8] = Instruct9;
+    InstructMemory[9] = Instruct10;
+    InstructMemory[10] = Instruct11;
+    InstructMemory[11] = Instruct12;
+    end // end nededge nReset 
+  
+endmodule 
+
+// End of Instruction Module
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MatricALU Module 
+// 
+// File Purpose: Takes operands and performs Matrix related operations. 
+// Collaborator: None
+// 
+
+
+// This is the memory locations for the system.
+/////////////////////////////////////////////
+//parameter MainMemEn = 0;
+//parameter InstrMemEn = 1;
+//parameter AluEn = 2;
+//parameter IntAlu = 3;
+//parameter Int_Register = 4;
+//parameter Exe_Engine = 5
+
+parameter MMult1 = 8'h00; //4x4 times 4x4
+parameter MMult2 = 8'h01; //4x2 times 2x4
+parameter MMult3 = 8'h02; //2x4 times 4x2
+parameter Madd = 8'h03; //4x4 + 4x4
+parameter Msub = 8'h04; //4x4 - 4x4
+parameter Mtranspose = 8'h05; //Rows & Collumns swap
+parameter MScale = 8'h06; //4x4 time a
+parameter MScaleImm = 8'h07; //4x4 times immediate
+
+parameter source1 = 0;
+parameter source2 = 1;
+parameter result = 2;
+parameter statusIn = 3;
+parameter statusOut = 4;
+
+module (Clk, MatrixDataOut, ExeDataOut, address, nRead, nWrite, nReset);
+  input logic Clk, nRead, nWrite, nReset;
+    input logic [15:0] address;
+    input logic [255:0] ExeDataOut;
+  
+    output logic [255:0] MatrixDataOut;
+  
+    logic [15:0] source1Matrix [3:0][3:0];
+    logic [15:0] sourc2Matrix [3:0][3:0];
+    logic [15:0] resultMatrix [3:0][3:0];
+    logic [255:0] matrixALUReg[5];
+    logic [7:0] operation;
+  
+    assign operation = matrixALUReg[statusIn];
+  
+    int i, j, k, rows, cols;
+  
+  always_ff @(negedge Clk or negedge nReset) begin
+    if(!nReset) begin
+      
+    end
+    
+    else
+      if(address[11:0] == 0) begin
+        source1Matrix[0][0] = ExeDataOut[15:0];
+        source1Matrix[0][1] = ExeDataOut[31:16];
+        source1Matrix[0][2] = ExeDataOut[47:32];
+        source1Matrix[0][3] = ExeDataOut[63:48];
+                
+        source1Matrix[1][0] = ExeDataOut[79:64];
+        source1Matrix[1][1] = ExeDataOut[95:80];
+        source1Matrix[1][2] = ExeDataOut[111:96];
+        source1Matrix[1][3] = ExeDataOut[127:112];
+                
+        source1Matrix[2][0] = ExeDataOut[143:128];
+        source1Matrix[2][1] = ExeDataOut[159:144];
+        source1Matrix[2][2] = ExeDataOut[175:160];
+        source1Matrix[2][3] = ExeDataOut[191:176]; 
+                
+        source1Matrix[3][0] = ExeDataOut[207:192];
+        source1Matrix[3][1] = ExeDataOut[223:208];
+        source1Matrix[3][2] = ExeDataOut[239:224];
+        source1Matrix[3][3] = ExeDataOut[255:240];
+        
+        source2Matrix[0][0] = ExeDataOut[15:0];
+        source2Matrix[0][1] = ExeDataOut[31:16];
+        source2Matrix[0][2] = ExeDataOut[47:32];
+        source2Matrix[0][3] = ExeDataOut[63:48];
+                
+        source2Matrix[1][0] = ExeDataOut[79:64];
+        source2Matrix[1][1] = ExeDataOut[95:80];
+        source2Matrix[1][2] = ExeDataOut[111:96];
+        source2Matrix[1][3] = ExeDataOut[127:112];
+                
+        source2Matrix[2][0] = ExeDataOut[143:128];
+        source2Matrix[2][1] = ExeDataOut[159:144];
+        source2Matrix[2][2] = ExeDataOut[175:160];
+        source2Matrix[2][3] = ExeDataOut[191:176]; 
+                
+        source2Matrix[3][0] = ExeDataOut[207:192];
+        source2Matrix[3][1] = ExeDataOut[223:208];
+        source2Matrix[3][2] = ExeDataOut[239:224];
+        source2Matrix[3][3] = ExeDataOut[255:240];
+      end // end of sourceMatrix
+    
+    if (address[11:0] == statusIn) begin
+      case(operation) 
+        MMult1: begin
+          for (i = 0; i < 4; i++) begin
+            for (j = 0; j < 4; j++) begin
+              resultMatrix[i][j] = 0;
+                  
+              for (k = 0; k < 4; k++) begin      
+                resultMatrix[i][j] += source1Matrix[i][k] * source2Matrix[k][j];
+              end // end of for k
+            end // end of for j
+          end // end of for i
+          
+          matrixALUReg[status_out] = 256'h1;
+        end // end MMult1
+        
+        MMult2: begin
+          for (i = 0; i < 4; i++) begin 
+            for (j = 0; j < 4; j++) begin 
+              temp[i][j] = 0;
+                
+              for (k = 0; k < 2; k++) begin
+                row_a[k] = fourByTwo[i][k];
+                col_b[k] = twoByFour[k][j];
+                temp[i][j] += row_a[k] * col_b[k];
+              end // end of for k
+            end // end of for j
+          end // end of for i
+          
+          resultMatrix = temp;
+        end // end MMult2
+        
+        MMult3: begin
+          for (i = 0; i < 2; i++) begin 
+            for (j = 0; j < 2; j++) begin
+              temp_m3[i][j] = 0;
+              
+              for (k = 0; k < 4; k++) begin 
+                temp_m3[i][j] += twoByFour[i][k] * fourByTwo[k][j];
+              end // end of for k
+            end // end of for j
+          end // end of for i
+          
+          resultMatrix[0] = {temp_m3[1][1],temp_m3[1][0],temp_m3[0][1],temp_m3[0][0]};
+        end // end of MMult3
+        
+        Madd: begin 
+          matrixALUReg[result] = matrixALUReg[source1] + matrixALUReg[source2];
+           
+          matrixALUReg[statusOut] = 256'h1;
+        end // end Madd
+    
+        Msub: begin 
+          matrixALUReg[result] = matrixALUReg[source1] - matrixALUReg[source2];
+           
+          matrixALUReg[statusOut] = 256'h1;
+        end // end Msub
+        
+        Mtranspose: begin
+          for(rows = 0; rows < 4; rows++) begin
+            for(cols = 0; col < 4; cols++) begin 
+              resultMatrix[rows][cols] = source1Matrix[cols][rows];
+            end // end of for cols
+          end // end of for rows
+          
+          matrixALUReg[result] = {resultMatrix[3][3], resultMatrix[3][2], resultMatrix[3][1], resultMatrix[3][0],
+                                  resultMatrix[2][3], resultMatrix[2][2], resultMatrix[2][1], resultMatrix[2][0],
+                                  resultMatrix[1][3], resultMatrix[1][2], resultMatrix[1][1], resultMatrix[1][0],
+                                  resultMatrix[0][3], resultMatrix[0][2], resultMatrix[0][1], resultMatrix[0][0]};
+          
+          matrixALURegisters[statusOut] = 256'h1;
+        end // end Mtranspose
+    
+ endmodule
+        
+ // End of MatrixALU Module
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
